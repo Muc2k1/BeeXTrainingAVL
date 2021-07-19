@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AvalonBeeX-training</title>
+    <link rel="stylesheet" type="text/css" href="css/mainpage">
+    <script src="socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+    <script>
+        let socket = io("http://localhost:9090");
+
+        socket.on('server-gui-cap-nhat-khung-nhin', function (membersArray) {
+            console.log("huh")
+            $('#playerList').html("");
+            membersArray.forEach(function (member) {
+                $('#playerList').append('<li class="player">' + member + '</li>')
+            })
+            //render player list vao mang hinh
+            //xu li button player
+            //chua can rule voi
+            //game xu li 5 player trc
+        })
+        socket.on('server-yeu-cau-hien-thi-nut-play', function () {
+            $('#start_form').show(100);
+        })
+        socket.on('server-yeu-cau-dung-hien-thi-nut-play', function () {
+            $('#start_form').hide(100);
+        })
+
+    </script>
+</head>
+
+<body>
+    <p>Chào
+        <span id="playerName" value=<%=name %> >
+            <%= name %>
+        </span> đã đến với phòng:
+        <span id="playerRoom" value=<%=room %> >
+            <%= room %>
+        </span> AvalonBeeX-training
+    </p>
+    <h2>Các người chơi trong phòng</h2>
+    <div id="playerList"></div>
+    <div>
+        <form action="/game" method="GET" id="start_form" style="display: none">
+            <!-- vao game, render ra screen moi -->
+            <button id="to_game_start_page" type="submit">Start</button>
+        </form>
+    </div>
+    <script> //script nay se dc dua di noi khac sau khi code xong
+        let pname = $("#playerName")[0].innerText;
+        let proom = $("#playerRoom")[0].innerText;
+        console.log(pname + ' -> ' + proom);
+        $(document).ready(() => {
+            socket.emit('client-gui-thong-tin-khoi-tao', {
+                name: pname,
+                room: proom
+            })
+        })
+    </script>
+</body>
+
+</html>

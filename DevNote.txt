@@ -1,0 +1,59 @@
+DEV-BLOG
+14/7/2021
+
+Quy định chung cho các thành viên nhóm: O.o
+
+các file router được đặt tên: <name>.router.js
+các file controller được đặt tên: <Name>Controller.js
+
+-> các file có tên là test sẽ được xóa khi hoàn thành app.
+-> các file test chỉ để chạy thử trong quá trình phát triển thử các tính năng.
+
+Controller chứa các hàm xử lí khi truy cập vào đường dẫn.
+index.route.js để lưu các đường dẫn -> liên kết với các file route khác
+các file route định tuyến các đường dẫn tới 1 hàm trong controller tương ứng để xử lí
+
+//---------------------
+
+Tình hình hiện tại:
+    - xây dựng theo mô hình MVC: chỉ đc VC, model vẫn chưa rõ lắm, sẽ thực hiện
+        sau khi xây dựng database cho project
+    - đã liên kết được firebase database
+    - đã dùng được socket cho project
+
+-> Cuối ngày 14/7: tạo dự án, liên kết firebase, có socket, xử lí cơ bản.
+
+io.sockets.emit -> gui tat ca client
+socket.emit -> tra ve co rieng client cua socket do
+socket.broadcast.emit -> tra ve cho tat ca client KHONG bao gom client cua socket do
+io.to(<socket.id>).emit -> gui cho rieng client co id do
+io.sockets.in(<roomid>).emit -> gui rieng cho tat ca client trong room co id do
+
+DEV_BLOG
+15/7/2021
+
+Mô tả về đăng nhập:
+Người chơi đăng nhập -> server tạo socket với người chơi đó -> lưu csdl
+    -Phòng: + tên Phòng
+            + mảng tên người chơi
+    -Người chơi: + tên người chơi
+                 + tên phòng hiện tại (?) optional
+-> người chơi đc join vào phòng mà họ muốn, leave khỏi phòng mặc định
+
+=> Kết quả mong muốn: Đếm được số người chơi trong 1 phòng, hiển thị được các người chơi, lưu csdl.
+//========================================================================
+socket.on('client-gui-thong-tin-khoi-tao', function (data) {
+        pname = data.name;
+        proom = data.room;
+        // xu li database -> tao phong + them nguoi choi
+        // -> cac bang tuong tac (rooms, players)
+        socket.join(proom)
+        socket.leave(socket.id)
+
+        let membersArray = [];
+        let membersSetType = io.of('/').adapter.rooms.get("FirstRoom ")
+        for (let member of membersSetType)
+            membersArray.push(member)
+        console.log(membersArray);
+    })
+tham khao khi truy cap room cua socket
