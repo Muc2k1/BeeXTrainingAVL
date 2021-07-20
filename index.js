@@ -20,9 +20,8 @@ mysql.dbconnect();
 
 const player = require('./models/PlayerModel')
 const rooms = require('./models/RoomModel')
-//---
 
-
+//socket.io
 io.on('connection', (socket, io) => {
     let pname;
     let proom;
@@ -45,7 +44,7 @@ io.on('connection', (socket, io) => {
 
         let membersArray = [];
         let membersName = [];
-        
+
         player.getPlayersInRoom(proom, membersArray, membersName, (mN) => {
             socket.to(proom).emit('server-gui-cap-nhat-khung-nhin', mN);
         }, () => {
@@ -70,6 +69,21 @@ io.on('connection', (socket, io) => {
     })
     socket.on('client-start-game', ()=>{
         console.log("game bat dau")
+        let membersArray = [];
+        let membersName = [];
+        let roleArray = [1, 2, 2, 3, 4];
+
+        player.getPlayersInRoom(proom, membersArray, membersName, (mN) => {
+            console.log("mN");
+            let membersWithRole = [];
+            for( let j = 0; j < 5; j++){
+                let randRole = Math.floor(Math.random() * roleArray.length);
+                membersWithRole.push({player: mN[j], role: roleArray[randRole]})
+                roleArray.splice(randRole, 1);
+            }
+            console.log(memberWithRole);
+        })
+
         //xu li chia roles
             //-> luu danh sach nguoi choi vao mang
             //chia role roi gui rieng tung client
