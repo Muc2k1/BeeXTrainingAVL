@@ -1,4 +1,3 @@
-const { clearCache } = require('ejs');
 const mysql = require('./DbConnection')
 
 let Player = {

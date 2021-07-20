@@ -19,6 +19,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 mysql.dbconnect();
 
 const player = require('./models/PlayerModel')
+const rooms = require('./models/RoomModel')
 //---
 
 
@@ -34,17 +35,17 @@ io.on('connection', (socket, io) => {
         proom = data.room;
         pid = socket.id;
 
-        // console.log("room check is: " + checkRoom(proom))
-        // createPlayer();
+        rooms.checkRoom(proom, pid, () =>{
+            socket.emit('server-xac-nhan-host');
+        });
         player.addPlayer(pid, pname, proom);
 
         socket.join(proom)
         socket.leave(socket.id)
 
-        //lấy danh sách người chơi trong phòng đó
         let membersArray = [];
         let membersName = [];
-
+        
         player.getPlayersInRoom(proom, membersArray, membersName, (mN) => {
             socket.to(proom).emit('server-gui-cap-nhat-khung-nhin', mN);
         }, () => {
@@ -52,10 +53,10 @@ io.on('connection', (socket, io) => {
         }, () => {
             socket.to(proom).emit('server-yeu-cau-dung-hien-thi-nut-play');
         })
-
-        //du lieu nay chi de render, hoac tuong lai se k xai, chi xai csdl, nhung v code hoi nhieu
         socket.on('disconnect', () => {
             player.deletePlayer(pid);
+
+            rooms.handleMember(proom, -1);
 
             player.getPlayersInRoom(proom, membersArray, membersName, (mN) => {
                 socket.to(proom).emit('server-gui-cap-nhat-khung-nhin', mN);
@@ -64,13 +65,16 @@ io.on('connection', (socket, io) => {
             }, () => {
                 socket.to(proom).emit('server-yeu-cau-dung-hien-thi-nut-play');
             })
-
-            // xem xet phong nao k con nguoi choi thi xoa
             socket.leave(proom)
         })
     })
-
-
+    socket.on('client-start-game', ()=>{
+        console.log("game bat dau")
+        //xu li chia roles
+            //-> luu danh sach nguoi choi vao mang
+            //chia role roi gui rieng tung client
+            //test truoc voi 5 nguoi choi
+    })
 })
 
 route(app);
