@@ -33,9 +33,10 @@ io.on('connection', (socket, io) => {
         pname = data.name;
         proom = data.room;
         pid = socket.id;
-
+        socket.emit('server-xac-nhan-id', pid);
+        
         rooms.checkRoom(proom, pid, () =>{
-            socket.emit('server-xac-nhan-host', pid);
+            socket.emit('server-xac-nhan-host');
         });
         player.addPlayer(pid, pname, proom);
 

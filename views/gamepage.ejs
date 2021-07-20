@@ -33,8 +33,10 @@
             if(isHost)
             $('#start_game').hide(100);
         })
-        socket.on('server-xac-nhan-host', function(pid){
+        socket.on('server-xac-nhan-id', function(pid){
             myId = pid;
+        })
+        socket.on('server-xac-nhan-host', function(){
             isHost = true;
         })
         socket.on('server-gui-role', function(data){
