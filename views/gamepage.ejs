@@ -13,9 +13,9 @@
         let socket = io("http://localhost:9090");
         let isHost = false;
         let myId;
+        let myRole;
 
         socket.on('server-gui-cap-nhat-khung-nhin', function (membersArray) {
-            console.log("huh")
             $('#playerList').html("");
             membersArray.forEach(function (member) {
                 $('#playerList').append('<li class="player">' + member + '</li>')
@@ -25,11 +25,11 @@
             //chua can rule voi
             //game xu li 5 player trc
         })
-        socket.on('server-yeu-cau-hien-thi-nut-play', function () {
+        socket.on('server-yeu-cau-hien-thi-nut-play', function (){
             if(isHost)
             $('#start_game').show(100);
         })
-        socket.on('server-yeu-cau-dung-hien-thi-nut-play', function () {
+        socket.on('server-yeu-cau-dung-hien-thi-nut-play', function (){
             if(isHost)
             $('#start_game').hide(100);
         })
@@ -42,9 +42,23 @@
         socket.on('server-gui-role', function(data){
             if(data.player == myId)
             {
+                myRole = data.role;
                 $("#play_ground").show(100);
-                $("#player_role")[0].innerText = data.role;
+                $("#player_role")[0].innerText = myRole;
             }
+        })
+        socket.on('server-yeu-cau-cap-nhat-player-list', function (membersWithRole){
+            $('#playerList').html("");
+            membersWithRole.forEach(function (member) {
+                if(myRole == "Mực nô đùa"){//normal player sight
+                    $('#playerList').append('<li class="player">' + member.name + '</li>')
+                }
+                else{//redteam or merlin sight
+                    if(member.role == "Mực gian tà"||member.role == "Mực the assassin")
+                    $('#playerList').append('<li class="player" style="color: red">' + member.name + '</li>')
+                    else $('#playerList').append('<li class="player">' + member.name + '</li>')
+                }
+            })
         })
     </script>
 </head>

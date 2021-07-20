@@ -69,18 +69,23 @@ io.on('connection', (socket, io) => {
     })
     socket.on('client-start-game', ()=>{
         console.log("game bat dau")
-        let membersArray = [];
-        let membersName = [];
         let roleArray = ["Mực tiên tri", "Mực nô đùa", "Mực nô đùa", "Mực gian tà", "Mực the assassin"];
 
-        player.getIdsInRoom(proom, (mI) => {
-            console.log("mN");
-            let membersWithRole = [];
-            for( let j = 0; j < 5; j++){
+        player.getIdsInRoom(proom, (mI,mN) => {
+
+            //lay chieu dai cua mI tim tren demoRule
+            //ley ve chuoi roleString
+            //tach chuoi roleString thanh mang roleArray
+
+            let membersWithRole = []; //Dung de render
+            let nOP = roleArray.length;
+            for( let j = 0; j < nOP; j++){
                 let randRole = Math.floor(Math.random() * roleArray.length);
-                membersWithRole.push({player: mI[j], role: roleArray[randRole]})
+                membersWithRole.push({name: mN[j],player: mI[j], role: roleArray[randRole]})
                 socket.to(proom).emit('server-gui-role', membersWithRole[j]);
                 roleArray.splice(randRole, 1);
+
+                socket.to(proom).emit('server-yeu-cau-cap-nhat-player-list', membersWithRole);
             }
             console.log(membersWithRole);
         })

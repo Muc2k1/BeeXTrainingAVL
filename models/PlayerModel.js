@@ -32,14 +32,16 @@ let Player = {
         })
     },
     getIdsInRoom: function (proom, rndfn) {
-        let sql = `select pid from player where proom = '${proom}'`
+        let sql = `select pid, pname from player where proom = '${proom}'`
         mysql.db.query(sql, (err, result) => {
             let membersName = [];
+            let membersId = [];
             if (err) throw err
             for (let i = 0; i < result.length; i++) {
-                membersName.push(result[i].pid)
+                membersId.push(result[i].pid)
+                membersName.push(result[i].pname)
             }
-            rndfn(membersName);
+            rndfn(membersId,membersName);
         })
     }
 }
