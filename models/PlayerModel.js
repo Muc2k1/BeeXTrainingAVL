@@ -14,23 +14,32 @@ let Player = {
             if (err) throw err
         })
     },
-    getPlayersInRoom: function (proom, membersArray, membersName, rndfn, plbtns, plbtnh) {
+    getPlayersInRoom: function (proom, membersName, rndfn, plbtns, plbtnh) {
         let sql = `select pname from player where proom = '${proom}'`
         mysql.db.query(sql, (err, result) => {
-            membersArray = [];
             membersName = [];
             if (err) throw err
-            membersArray = [...result]
-            for (let i = 0; i < membersArray.length; i++) {
-                membersName.push(membersArray[i].pname)
+            for (let i = 0; i < result.length; i++) {
+                membersName.push(result[i].pname)
             }
             rndfn(membersName);
-            if (membersArray.length > 4) {
+            if (result.length > 4) {
                 plbtns();
             }
-            else if (membersArray.length < 5) {
+            else if (result.length < 5) {
                 plbtnh();
             }
+        })
+    },
+    getIdsInRoom: function (proom, rndfn) {
+        let sql = `select pid from player where proom = '${proom}'`
+        mysql.db.query(sql, (err, result) => {
+            let membersName = [];
+            if (err) throw err
+            for (let i = 0; i < result.length; i++) {
+                membersName.push(result[i].pid)
+            }
+            rndfn(membersName);
         })
     }
 }

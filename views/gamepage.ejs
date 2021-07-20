@@ -12,6 +12,7 @@
     <script>
         let socket = io("http://localhost:9090");
         let isHost = false;
+        let myId;
 
         socket.on('server-gui-cap-nhat-khung-nhin', function (membersArray) {
             console.log("huh")
@@ -32,10 +33,17 @@
             if(isHost)
             $('#start_game').hide(100);
         })
-        socket.on('server-xac-nhan-host', function(){
+        socket.on('server-xac-nhan-host', function(pid){
+            myId = pid;
             isHost = true;
         })
-
+        socket.on('server-gui-role', function(data){
+            if(data.player == myId)
+            {
+                $("#play_ground").show(100);
+                $("#player_role")[0].innerText = data.role;
+            }
+        })
     </script>
 </head>
 
@@ -54,12 +62,13 @@
         <button id="start_game" type="submit" style="display:none">Start</button>
     </div>
     <div id="play_ground" style="display:none">
-        Playground
+        Playground :
+        <div id="player_role"></div>
     </div>
     <script> //script nay se dc dua di noi khac sau khi code xong
         let pname = $("#playerName")[0].innerText;
         let proom = $("#playerRoom")[0].innerText;
-        console.log(pname + ' -> ' + proom);
+        // console.log(pname + ' -> ' + proom);
         $(document).ready(() => {
             socket.emit('client-gui-thong-tin-khoi-tao', {
                 name: pname,

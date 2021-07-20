@@ -35,17 +35,16 @@ io.on('connection', (socket, io) => {
         pid = socket.id;
 
         rooms.checkRoom(proom, pid, () =>{
-            socket.emit('server-xac-nhan-host');
+            socket.emit('server-xac-nhan-host', pid);
         });
         player.addPlayer(pid, pname, proom);
 
         socket.join(proom)
         socket.leave(socket.id)
 
-        let membersArray = [];
         let membersName = [];
 
-        player.getPlayersInRoom(proom, membersArray, membersName, (mN) => {
+        player.getPlayersInRoom(proom, membersName, (mN) => {
             socket.to(proom).emit('server-gui-cap-nhat-khung-nhin', mN);
         }, () => {
             socket.to(proom).emit('server-yeu-cau-hien-thi-nut-play');
@@ -57,7 +56,7 @@ io.on('connection', (socket, io) => {
 
             rooms.handleMember(proom, -1);
 
-            player.getPlayersInRoom(proom, membersArray, membersName, (mN) => {
+            player.getPlayersInRoom(proom, membersName, (mN) => {
                 socket.to(proom).emit('server-gui-cap-nhat-khung-nhin', mN);
             }, () => {
                 socket.to(proom).emit('server-yeu-cau-hien-thi-nut-play');
@@ -71,17 +70,18 @@ io.on('connection', (socket, io) => {
         console.log("game bat dau")
         let membersArray = [];
         let membersName = [];
-        let roleArray = [1, 2, 2, 3, 4];
+        let roleArray = ["Mực tiên tri", "Mực nô đùa", "Mực nô đùa", "Mực gian tà", "Mực the assassin"];
 
-        player.getPlayersInRoom(proom, membersArray, membersName, (mN) => {
+        player.getIdsInRoom(proom, (mI) => {
             console.log("mN");
             let membersWithRole = [];
             for( let j = 0; j < 5; j++){
                 let randRole = Math.floor(Math.random() * roleArray.length);
-                membersWithRole.push({player: mN[j], role: roleArray[randRole]})
+                membersWithRole.push({player: mI[j], role: roleArray[randRole]})
+                socket.to(proom).emit('server-gui-role', membersWithRole[j]);
                 roleArray.splice(randRole, 1);
             }
-            console.log(memberWithRole);
+            console.log(membersWithRole);
         })
 
         //xu li chia roles
