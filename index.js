@@ -20,6 +20,7 @@ mysql.dbconnect();
 
 const player = require('./models/PlayerModel')
 const rooms = require('./models/RoomModel')
+const demo = require('./models/DemoModel')
 
 //socket.io
 io.on('connection', (socket, io) => {
@@ -34,8 +35,8 @@ io.on('connection', (socket, io) => {
         proom = data.room;
         pid = socket.id;
         socket.emit('server-xac-nhan-id', pid);
-        
-        rooms.checkRoom(proom, pid, () =>{
+
+        rooms.checkRoom(proom, pid, () => {
             socket.emit('server-xac-nhan-host');
         });
         player.addPlayer(pid, pname, proom);
@@ -67,33 +68,41 @@ io.on('connection', (socket, io) => {
             socket.leave(proom)
         })
     })
-    socket.on('client-start-game', ()=>{
+    socket.on('client-start-game', () => {
         console.log("game bat dau")
-        let roleArray = ["Mực tiên tri", "Mực nô đùa", "Mực nô đùa", "Mực gian tà", "Mực the assassin"];
+        // let roleArray = ["Mực tiên tri", "Mực nô đùa", "Mực nô đùa", "Mực gian tà", "Mực the assassin"];
+        let roleArray = [];
+        player.getIdsInRoom(proom, (mI, mN) => {
+            demo.getRuleString(mI.length, (result) => {
+                roleArray = [...result];
+                let membersWithRole = []; //Dung de render
+                let nOP = roleArray.length;
+                for (let j = 0; j < nOP; j++) {
+                    let randRole = Math.floor(Math.random() * roleArray.length);
+                    membersWithRole.push({ name: mN[j], player: mI[j], role: roleArray[randRole] })
+                    socket.to(proom).emit('server-gui-role', membersWithRole[j]);
+                    roleArray.splice(randRole, 1);
 
-        player.getIdsInRoom(proom, (mI,mN) => {
-
+                    socket.emit('server-yeu-cau-cap-nhat-player-list', membersWithRole);
+                }
+                console.log(membersWithRole);
+            });
             //lay chieu dai cua mI tim tren demoRule
             //ley ve chuoi roleString
             //tach chuoi roleString thanh mang roleArray
 
-            let membersWithRole = []; //Dung de render
-            let nOP = roleArray.length;
-            for( let j = 0; j < nOP; j++){
-                let randRole = Math.floor(Math.random() * roleArray.length);
-                membersWithRole.push({name: mN[j],player: mI[j], role: roleArray[randRole]})
-                socket.to(proom).emit('server-gui-role', membersWithRole[j]);
-                roleArray.splice(randRole, 1);
+            // let membersWithRole = []; //Dung de render
+            // let nOP = roleArray.length;
+            // for (let j = 0; j < nOP; j++) {
+            //     let randRole = Math.floor(Math.random() * roleArray.length);
+            //     membersWithRole.push({ name: mN[j], player: mI[j], role: roleArray[randRole] })
+            //     socket.to(proom).emit('server-gui-role', membersWithRole[j]);
+            //     roleArray.splice(randRole, 1);
 
-                socket.to(proom).emit('server-yeu-cau-cap-nhat-player-list', membersWithRole);
-            }
-            console.log(membersWithRole);
+            //     socket.emit('server-yeu-cau-cap-nhat-player-list', membersWithRole);
+            // }
+            // console.log(membersWithRole);
         })
-
-        //xu li chia roles
-            //-> luu danh sach nguoi choi vao mang
-            //chia role roi gui rieng tung client
-            //test truoc voi 5 nguoi choi
     })
 })
 
