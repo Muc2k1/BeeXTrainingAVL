@@ -146,8 +146,6 @@
                     voteTeamResult.forEach(function (data) {
                         if (data.vote) voteCount++;
                     })
-
-
                     if (voteCount > voteTeamResult.length / 2) {
                         console.log()
                         socket.emit('host-gui-yeu-cau-vote-thanh-cong', gameData)

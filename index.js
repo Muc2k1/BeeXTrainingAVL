@@ -100,10 +100,16 @@ io.on('connection', (socket, io) => {
         socket.to(proom).emit('server-vote-team-fb', data);
     })
     socket.on('host-gui-yeu-cau-vote-thanh-cong', (gamedata)=>{
+        //handle
         console.log("vote thanh cong")
     })
     socket.on('host-gui-yeu-cau-vote-lai', (gamedata)=>{
+        //handle
         console.log("vote that bai")
+        setTimeout( ()=>{
+            let randLeader = Math.floor(Math.random() * gamedata.length);
+            socket.to(proom).emit('server-gui-yeu-cau-teamup', gamedata[randLeader].player);
+        } , 5000)
     })
     //game start
     //round = 1, deathcount = 0, chon ngau nhien 1 nguoi choi lam leader
