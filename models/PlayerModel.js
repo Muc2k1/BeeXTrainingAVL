@@ -43,6 +43,12 @@ let Player = {
             }
             rndfn(membersId,membersName);
         })
+    },
+    addRole: function (pid, prole){
+        let sql = `update player set prole = '${prole}' where pid = '${pid}'`
+        mysql.db.query(sql, (err, result) => {
+            if (err) throw err
+        })
     }
 }
 

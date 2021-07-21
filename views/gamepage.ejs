@@ -10,56 +10,7 @@
     <script src="socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
     <script>
-        let socket = io("http://localhost:9090");
-        let isHost = false;
-        let myId;
-        let myRole;
 
-        socket.on('server-gui-cap-nhat-khung-nhin', function (membersArray) {
-            $('#playerList').html("");
-            membersArray.forEach(function (member) {
-                $('#playerList').append('<li class="player">' + member + '</li>')
-            })
-            //render player list vao mang hinh
-            //xu li button player
-            //chua can rule voi
-            //game xu li 5 player trc
-        })
-        socket.on('server-yeu-cau-hien-thi-nut-play', function (){
-            if(isHost)
-            $('#start_game').show(100);
-        })
-        socket.on('server-yeu-cau-dung-hien-thi-nut-play', function (){
-            if(isHost)
-            $('#start_game').hide(100);
-        })
-        socket.on('server-xac-nhan-id', function(pid){
-            myId = pid;
-        })
-        socket.on('server-xac-nhan-host', function(){
-            isHost = true;
-        })
-        socket.on('server-gui-role', function(data){
-            if(data.player == myId)
-            {
-                myRole = data.role;
-                $("#play_ground").show(100);
-                $("#player_role")[0].innerText = myRole;
-            }
-        })
-        socket.on('server-yeu-cau-cap-nhat-player-list', function (membersWithRole){
-            $('#playerList').html("");
-            membersWithRole.forEach(function (member) {
-                if(myRole == "Mực nô đùa"){//normal player sight
-                    $('#playerList').append('<li class="player">' + member.name + '</li>')
-                }
-                else{//redteam or merlin sight
-                    if(member.role == "Mực gian tà"||member.role == "Mực the assassin")
-                    $('#playerList').append('<li class="player" style="color: red">' + member.name + '</li>')
-                    else $('#playerList').append('<li class="player">' + member.name + '</li>')
-                }
-            })
-        })
     </script>
 </head>
 
@@ -73,7 +24,21 @@
         </span> AvalonBeeX-training
     </p>
     <h2>Các người chơi trong phòng</h2>
-    <div id="playerList"></div>
+    <div id="playerList">
+    </div>
+
+    <div id="teamleader" style="display: none">
+        <p>Hãy lập team thực hiện nhiệm vụ</p>
+        <button id="go" type="submit">OK</button>
+    </div>
+
+    <div id="system" style="display: none">
+        <p>Team được lập bao gồm: </p>
+        <div id="teammate"></div>
+        <button id="TYes">Yes</button>
+        <button id="TNo">Nope</button>
+    </div>
+
     <div>
         <button id="start_game" type="submit" style="display:none">Start</button>
     </div>
@@ -82,6 +47,139 @@
         <div id="player_role"></div>
     </div>
     <script> //script nay se dc dua di noi khac sau khi code xong
+
+        //================================================================================================
+        let socket = io("http://localhost:9090");
+        let isHost = false;
+        let myId;
+        let myRole;
+        let gameData;
+        let voteTeamResult = [];
+
+        socket.on('server-gui-cap-nhat-khung-nhin', function (membersArray) {
+            $('#playerList').html("");
+            membersArray.forEach(function (member) {
+                $('#playerList').append('<li class="player">' + member + '</li>')
+            })
+        })
+        socket.on('server-yeu-cau-hien-thi-nut-play', function () {
+            if (isHost)
+                $('#start_game').show(100);
+        })
+        socket.on('server-yeu-cau-dung-hien-thi-nut-play', function () {
+            if (isHost)
+                $('#start_game').hide(100);
+        })
+        socket.on('server-xac-nhan-id', function (pid) {
+            myId = pid;
+        })
+        socket.on('server-xac-nhan-host', function () {
+            isHost = true;
+        })
+        socket.on('server-gui-role', function (data) {
+            if (data.player == myId) {
+                myRole = data.role;
+                $("#play_ground").show(100);
+                $("#player_role")[0].innerText = myRole;
+            }
+        })
+        socket.on('server-yeu-cau-cap-nhat-player-list', function (membersWithRole) {
+            gameData = [...membersWithRole]
+            $('#playerList').html("");
+            membersWithRole.forEach(function (member) {
+                if (myRole == "Mực nô đùa") {//normal player sight
+                    $('#playerList').append('<li class="player">' + member.name + '</li>')
+                }
+                else {//redteam or merlin sight
+                    if (member.role == "Mực gian tà" || member.role == "Mực the assassin")
+                        $('#playerList').append('<li class="player" style="color: red">' + member.name + '</li>')
+                    else $('#playerList').append('<li class="player">' + member.name + '</li>')
+                }
+            })
+        })
+        socket.on('server-gui-yeu-cau-teamup', function (pid) {
+            if (myId == pid) {
+                $('#playerList').html("");
+                gameData.forEach(function (member) {
+                    if (myRole == "Mực nô đùa") {//normal player sight
+                        $('#playerList').append('<li class="player">' + member.name + '<input class="cbox" type="checkbox" value="' + member.name + '"></li>')
+                    }
+                    else {//redteam or merlin sight
+                        if (member.role == "Mực gian tà" || member.role == "Mực the assassin")
+                            $('#playerList').append('<li class="player" style="color: red">' + member.name + '<input class="cbox" type="checkbox" value="' + member.name + '"></li>')
+                        else $('#playerList').append('<li class="player">' + member.name + '<input class="cbox" type="checkbox" value="' + member.name + '"></li>')
+                    }
+                })
+                $('#teamleader').show(100);
+            }
+            //xu li so nguoi trong team dung theo rule
+        })
+        socket.on('server-gui-thong-tin-teamup', function (teamdata) {
+            $('#system').show(100);
+            console.log("yeah im here")
+            teamdata.forEach(function (member) {
+                $('#teammate').append('<li>' + member + '</li>')
+            })
+
+            $('#playerList').html("");
+            gameData.forEach(function (member) {
+                if (myRole == "Mực nô đùa") {//normal player sight
+                    $('#playerList').append('<li class="player">' + member.name + '</li>')
+                }
+                else {//redteam or merlin sight
+                    if (member.role == "Mực gian tà" || member.role == "Mực the assassin")
+                        $('#playerList').append('<li class="player" style="color: red">' + member.name + '</li>')
+                    else $('#playerList').append('<li class="player">' + member.name + '</li>')
+                }
+            })
+            voteTeamResult = [];
+        });
+
+        socket.on('server-vote-team-fb-cho-host', function (data) { //{vote, pid, pname, prole}
+            if (isHost) {
+                voteTeamResult.push({ vote: data[0], pid: data[1], pname: data[2], prole: data[3] });
+
+                if (voteTeamResult.length == gameData.length) {
+                    socket.emit('host-gui-ket-qua-vote', voteTeamResult)
+                    console.log("handle")
+                    let voteCount = 0;
+                    voteTeamResult.forEach(function (data) {
+                        if (data.vote) voteCount++;
+                    })
+
+
+                    if (voteCount > voteTeamResult.length / 2) {
+                        console.log()
+                        socket.emit('host-gui-yeu-cau-vote-thanh-cong', gameData)
+                    } else {
+                        socket.emit('host-gui-yeu-cau-vote-lai', gameData)
+                    }
+                }
+            }
+        })
+        socket.on('server-vote-team-fb', function (data) { //{vote, pid, pname, prole}
+            $('#playerList').html("");
+            data.forEach(function (member) {
+                console.log(member)
+                let vr;
+                if (member.vote) {
+                    vr = '<span style="color: green">YES</span>'
+                }
+                else {
+                    vr = '<span style="color: purple">NO</span>'
+                }
+                if (myRole == "Mực nô đùa") {//normal player sight
+                    $('#playerList').append('<li class="player">' + member.pname + vr + '</li>')
+                }
+                else {//redteam or merlin sight
+                    if (member.prole == "Mực gian tà" || member.prole == "Mực the assassin")
+                        $('#playerList').append('<li class="player" style="color: red">' + member.pname + vr + '</li>')
+                    else $('#playerList').append('<li class="player">' + member.pname + vr + '</li>')
+                }
+            })
+        })
+        //==============================================================================================
+
         let pname = $("#playerName")[0].innerText;
         let proom = $("#playerRoom")[0].innerText;
         // console.log(pname + ' -> ' + proom);
@@ -95,6 +193,26 @@
             $('#start_game').hide(100);
             socket.emit('client-start-game')
         })
+        $("#go").click(() => {
+            let teammate = [];
+            let plist = document.getElementsByClassName('cbox')
+            for (let i = 0; i < plist.length; i++) {
+                if (plist[i].checked) {
+                    teammate.push(plist[i].value.trim())
+                }
+            }
+            $('#teamleader').hide(100);
+            socket.emit('client-teamup-fb', teammate)
+        })
+        $("#TYes").click(() => {
+            $('#system').hide(100);
+            socket.emit('client-vote-team-fb', [true, myId, pname, myRole])
+        })
+        $(("#TNo")).click(() => {
+            $('#system').hide(100);
+            socket.emit('client-vote-team-fb', [false, myId, pname, myRole])
+        })
+
     </script>
 </body>
 

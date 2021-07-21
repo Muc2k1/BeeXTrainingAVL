@@ -69,7 +69,6 @@ io.on('connection', (socket, io) => {
         })
     })
     socket.on('client-start-game', () => {
-        console.log("game bat dau")
         let roleArray = [];
         player.getIdsInRoom(proom, (mI, mN) => {
             demo.getRuleString(mI.length, (result) => {
@@ -79,15 +78,42 @@ io.on('connection', (socket, io) => {
                 for (let j = 0; j < nOP; j++) {
                     let randRole = Math.floor(Math.random() * roleArray.length);
                     membersWithRole.push({ name: mN[j], player: mI[j], role: roleArray[randRole] })
+                    player.addRole(mI[j], roleArray[randRole]);
                     socket.to(proom).emit('server-gui-role', membersWithRole[j]);
                     roleArray.splice(randRole, 1);
 
                     socket.to(proom).emit('server-yeu-cau-cap-nhat-player-list', membersWithRole);
                 }
-                console.log(membersWithRole);
+                //xử lí game ở đây
+                let randLeader = Math.floor(Math.random() * membersWithRole.length);
+                socket.to(proom).emit('server-gui-yeu-cau-teamup', membersWithRole[randLeader].player);
             });
         })
     })
+    socket.on('client-teamup-fb', (teamdata) => {
+        socket.to(proom).emit('server-gui-thong-tin-teamup', teamdata);
+    })
+    socket.on('client-vote-team-fb', (data) => {
+        socket.to(proom).emit('server-vote-team-fb-cho-host', data);
+    })
+    socket.on('host-gui-ket-qua-vote', (data) => {
+        socket.to(proom).emit('server-vote-team-fb', data);
+    })
+    socket.on('host-gui-yeu-cau-vote-thanh-cong', (gamedata)=>{
+        console.log("vote thanh cong")
+    })
+    socket.on('host-gui-yeu-cau-vote-lai', (gamedata)=>{
+        console.log("vote that bai")
+    })
+    //game start
+    //round = 1, deathcount = 0, chon ngau nhien 1 nguoi choi lam leader
+    //nguoi choi duoc RENDER nhiem vu: "chon n nguoi choi de lap team" (bang checkbox)->nhan ACCEPT
+    //moi nguoi duoc RENDER ra team dang duoc ghep->vote cong khai
+    //neu that bai: chon nguoi choi khac lam leader (deathcount ++ , deathcount == 5 => game end)
+    //neu thanh congn: (deathcount = 0)RENDER nhiem vu cho team duoc ghep
+    //RENDER mang hinh cho cho m.n->team vote kin
+    //RENDER ket qua cho mn, luu kq vao csdl
+    //round ++;
 })
 
 route(app);
