@@ -104,8 +104,6 @@ io.on('connection', (socket, io) => {
         console.log("vote thanh cong")
     })
     socket.on('host-gui-yeu-cau-vote-lai', (gamedata)=>{
-        //handle
-        console.log("vote that bai")
         setTimeout( ()=>{
             let randLeader = Math.floor(Math.random() * gamedata.length);
             socket.to(proom).emit('server-gui-yeu-cau-teamup', gamedata[randLeader].player);

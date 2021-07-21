@@ -116,7 +116,9 @@
         })
         socket.on('server-gui-thong-tin-teamup', function (teamdata) {
             $('#system').show(100);
-            console.log("yeah im here")
+
+            $('#teammate').html("");
+            
             teamdata.forEach(function (member) {
                 $('#teammate').append('<li>' + member + '</li>')
             })
@@ -135,29 +137,31 @@
             voteTeamResult = [];
         });
 
-        socket.on('server-vote-team-fb-cho-host', function (data) { //{vote, pid, pname, prole}
+        socket.on('server-vote-team-fb-cho-host', function (data) { //{vote, pid, pname, prole, leaderid}
             if (isHost) {
                 voteTeamResult.push({ vote: data[0], pid: data[1], pname: data[2], prole: data[3] });
 
                 if (voteTeamResult.length == gameData.length) {
-                    socket.emit('host-gui-ket-qua-vote', voteTeamResult)
                     console.log("handle")
                     let voteCount = 0;
+                    let vr;
                     voteTeamResult.forEach(function (data) {
                         if (data.vote) voteCount++;
                     })
                     if (voteCount > voteTeamResult.length / 2) {
-                        console.log()
+                        vr = true;
                         socket.emit('host-gui-yeu-cau-vote-thanh-cong', gameData)
                     } else {
+                        vr = false;
                         socket.emit('host-gui-yeu-cau-vote-lai', gameData)
                     }
+                    socket.emit('host-gui-ket-qua-vote', [voteTeamResult, vr])
                 }
             }
         })
         socket.on('server-vote-team-fb', function (data) { //{vote, pid, pname, prole}
             $('#playerList').html("");
-            data.forEach(function (member) {
+            data[0].forEach(function (member) {
                 console.log(member)
                 let vr;
                 if (member.vote) {
@@ -175,6 +179,9 @@
                     else $('#playerList').append('<li class="player">' + member.pname + vr + '</li>')
                 }
             })
+            if(data[1])
+                $('#playerList').append('<h3>Vote thanh cong</h3>')
+            else $('#playerList').append('<h3>That bai</h3>')
         })
         //==============================================================================================
 
