@@ -31,20 +31,20 @@
         <div id="death_vote" style="color: red"></div>
         <div id="teamleader" style="display: none">
             <p id="teamup_msg"></p>
-            <button id="go" type="submit">OK</button>
+            <button id="go" type="submit" style="cursor: pointer">OK</button>
         </div>
 
         <div id="system" style="display: none">
             <p>Team được lập bao gồm: </p>
             <div id="teammate"></div>
-            <button id="TYes">Yes</button>
-            <button id="TNo">Nope</button>
+            <button id="TYes" style="cursor: pointer">Yes</button>
+            <button id="TNo" style="cursor: pointer">Nope</button>
         </div>
 
         <div id="mission" style="display: none">
             <p>Bạn có quyết định cố gắn hết sức cho nhiệm vụ lần này?</p>
-            <button id="MYes">Yes</button>
-            <button id="MNo" style="display: none">Nope</button>
+            <button id="MYes" style="cursor: pointer">Yes</button>
+            <button id="MNo" style="display: none; cursor: pointer">Nope</button>
         </div>
 
         <div>
@@ -53,14 +53,15 @@
 
         <div id="message"></div>
         <div id="play_ground" style="display:none">
-            Playground :
-            <div id="player_role"></div>
+            Your Role :
+            <div id="player_role" style="cursor: pointer; font-size: 20px; font-weight: bold"></div>
+            <div id="role_des" style="display:none"></div>
         </div>
     </div>
     <div id="gameNotification" style="display: none">Game result</div><button style="display: none" type="button"
         id="seeker_find_btn">OK</button>
     <form id="endgame_form" action="/" method="GET" style="display: none">
-        <button type="submit">Main menu</button>
+        <button type="submit" style="cursor: pointer">Main menu</button>
     </form>
 
     <script> //script nay se dc dua di noi khac sau khi code xong
@@ -81,6 +82,7 @@
         let winLose = [];
         let deathVote = "";
         let isGameStarted = 0;
+        let enableRoleDes = false;
 
         socket.on('server-gui-cap-nhat-khung-nhin', function (membersArray) {
             if (isGameStarted == 0) {
@@ -360,6 +362,15 @@
                 $("#endgame_form").show(200)
             }
         });
+        socket.on('server-send-role-des-for-player', function(data) {//[des, data[1]]
+            console.log(data[1])
+            if(myId == data[1]){
+                enableRoleDes = true;
+                $("#role_des").html("")
+                $("#role_des").append("<p>" + data[0] + "</p>")
+                $("#role_des").show(200)
+            }
+        });
         //==============================================================================================
 
 
@@ -419,6 +430,17 @@
             else {
                 //handle
                 socket.emit('assassin-not-kill-seeker')
+            }
+        })
+        $("#player_role").click(() => {
+            if(!enableRoleDes){
+                console.log("enable")
+                socket.emit('client-get-my-role-des', [myRole, myId])
+            }
+            else{
+                console.log("disable")
+                enableRoleDes = false;
+                $("#role_des").hide(100);
             }
         })
     </script>

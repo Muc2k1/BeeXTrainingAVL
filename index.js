@@ -22,6 +22,7 @@ const player = require('./models/PlayerModel')
 const rooms = require('./models/RoomModel')
 const demo = require('./models/DemoruleModel')
 const rule = require('./models/RuleModel')
+const role = require('./models/RoleModel')
 
 //socket.io
 io.on('connection', (socket, io) => {
@@ -158,6 +159,12 @@ io.on('connection', (socket, io) => {
     })
     socket.on('client-has-vote-5-times-fail', () => {
         socket.to(proom).emit('server-decided-evil-win');
+    })
+    socket.on('client-get-my-role-des', (data)=>{ //myRole, myId
+        let playerid = data[1]
+        role.getRoleDescription(data[0], (des)=>{
+            socket.to(proom).emit('server-send-role-des-for-player', [des, playerid]);
+        })
     })
 })
 

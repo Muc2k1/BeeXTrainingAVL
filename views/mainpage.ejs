@@ -20,13 +20,13 @@
 <body>
     <div class="wrapper">
         <h1>Avalon from BeeX-training</h1>
-        <p id="play">Play free now</p>
+        <p id="play" style="cursor: pointer">Play free now</p>
         <form name="login" action="/play" method="POST" id="play_form" style="display: none" onSubmit="return validate()">
             <input type="text" name="name" id="name" placeholder="Tên hiển thị của bạn" required maxlength="30"></input>
             <input type="text" name="room" id="room" placeholder="Tên phòng" required  maxlength="20"></input>
             <button id="to_game_page" type="submit">Play</button>
         </form>
-        <p id="describe">Describe</p>
+        <p id="describe" style="cursor: pointer">Describe</p>
         <div id="des_form" style="display: none">
             <p>Mực + Tris + Ened là tác giả</p>
         </div>
