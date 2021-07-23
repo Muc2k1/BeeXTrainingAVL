@@ -80,12 +80,23 @@
         let gameMissionResult = [];
         let winLose = [];
         let deathVote = "";
+        let isGameStarted = 0;
 
         socket.on('server-gui-cap-nhat-khung-nhin', function (membersArray) {
-            $('#playerList').html("");
-            membersArray.forEach(function (member) {
-                $('#playerList').append('<li class="player">' + member + '</li>')
-            })
+            if (isGameStarted == 0) {
+                $('#playerList').html("");
+                membersArray.forEach(function (member) {
+                    $('#playerList').append('<li class="player">' + member + '</li>')
+                })
+            }
+            else if (isGameStarted == 1) {
+                isGameStarted = 2;
+                $("#gameWrapper").html("")
+                $("#gameNotification").hide(200)
+                $("#gameNotification").html("<h1>Đã có người chơi thoát, không thể tiếp tục game được nữa</h1>")
+                $("#gameNotification").show(200)
+                $("#endgame_form").show(200)
+            }
         })
         socket.on('server-yeu-cau-hien-thi-nut-play', function () {
             if (isHost)
@@ -102,6 +113,7 @@
             isHost = true;
         })
         socket.on('server-gui-role', function (data) {
+            isGameStarted = 1;
             if (data.player == myId) {
                 myRole = data.role;
                 $("#play_ground").show(100);
@@ -339,12 +351,14 @@
             $('#death_vote').html("")
             $('#death_vote').append(deathVote)
         })
-        socket.on('server-send-host-is-disconnect',function() {
-            $("#gameWrapper").html("")
-            $("#gameNotification").hide(200)
-            $("#gameNotification").html("<h1>Host đã mất kết nối</h1>")
-            $("#gameNotification").show(200)
-            $("#endgame_form").show(200)
+        socket.on('server-send-host-is-disconnect', function () {
+            if (isGameStarted < 2) {
+                $("#gameWrapper").html("")
+                $("#gameNotification").hide(200)
+                $("#gameNotification").html("<h1>Host đã mất kết nối</h1>")
+                $("#gameNotification").show(200)
+                $("#endgame_form").show(200)
+            }
         });
         //==============================================================================================
 
@@ -401,12 +415,10 @@
             if (seeker == "Mực tiên tri") {
                 //handle
                 socket.emit('assassin-kill-seeker')
-                console.log("Đúng")
             }
             else {
                 //handle
                 socket.emit('assassin-not-kill-seeker')
-                console.log("Sai")
             }
         })
     </script>

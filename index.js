@@ -60,21 +60,19 @@ io.on('connection', (socket, io) => {
 
             rooms.handleMember(proom, -1);
 
-            rooms.immaHost(proom, pid,(result)=>{
-                if(result){
+            rooms.immaHost(proom, pid, (result) => {
+                if (result) {
                     socket.to(proom).emit('server-send-host-is-disconnect');
                 }
-                else{
-                    player.getPlayersInRoom(proom, membersName, (mN) => {
-                        socket.to(proom).emit('server-gui-cap-nhat-khung-nhin', mN);
-                    }, () => {
-                        socket.to(proom).emit('server-yeu-cau-hien-thi-nut-play');
-                    }, () => {
-                        socket.to(proom).emit('server-yeu-cau-dung-hien-thi-nut-play');
-                    })
-                    socket.leave(proom)
-                }
             })
+            player.getPlayersInRoom(proom, membersName, (mN) => {
+                socket.to(proom).emit('server-gui-cap-nhat-khung-nhin', mN);
+            }, () => {
+                socket.to(proom).emit('server-yeu-cau-hien-thi-nut-play');
+            }, () => {
+                socket.to(proom).emit('server-yeu-cau-dung-hien-thi-nut-play');
+            })
+            socket.leave(proom)
         })
     })
     socket.on('client-start-game', () => {
@@ -124,14 +122,14 @@ io.on('connection', (socket, io) => {
             }, 5000)
         }
     })
-    socket.on('client-vote-mission-fb', (voteR)=>{
+    socket.on('client-vote-mission-fb', (voteR) => {
         socket.to(proom).emit('server-send-vote-result-to-host', voteR);
     })
-    socket.on('client-send-final-vote-result-to-host', (result)=>{
+    socket.on('client-send-final-vote-result-to-host', (result) => {
         socket.to(proom).emit('server-send-mission-final-result', result);
         socket.to(proom).emit('server-wait-for-host');
     })
-    socket.on('client-send-fb-update-mission-info-to-players', (gameData)=>{
+    socket.on('client-send-fb-update-mission-info-to-players', (gameData) => {
         rooms.getRound(proom, (round) => {
             rule.getMPM(round, gameData.length, (mpm) => {
                 console.log(mpm);
@@ -141,24 +139,24 @@ io.on('connection', (socket, io) => {
             })
         })
     })
-    socket.on('client-send-game-is-ending', (wincount)=>{
+    socket.on('client-send-game-is-ending', (wincount) => {
         console.log("end game")
-        if(wincount>0){
+        if (wincount > 0) {
             console.log("assassin last chance")
             socket.to(proom).emit('server-give-assassin-last-chance');
         }
-        else{
+        else {
             console.log("evil win")
             socket.to(proom).emit('server-decided-evil-win');
         }
     })
-    socket.on('assassin-kill-seeker', ()=>{
+    socket.on('assassin-kill-seeker', () => {
         socket.to(proom).emit('server-decided-evil-win');
     })
-    socket.on('assassin-not-kill-seeker', ()=>{
+    socket.on('assassin-not-kill-seeker', () => {
         socket.to(proom).emit('server-decided-human-win');
     })
-    socket.on('client-has-vote-5-times-fail', ()=>{
+    socket.on('client-has-vote-5-times-fail', () => {
         socket.to(proom).emit('server-decided-evil-win');
     })
 })
