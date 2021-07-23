@@ -45,7 +45,7 @@ let Room = {
         let sql = `select rhost from rooms where rname = "${rname}"`
         mysql.db.query(sql, (err, result) => {
             if (err) throw err
-            if(pid == result[0].rhost) callback(); 
+            if(pid == result[0].rhost) callback(result[0].rhost); 
         })
     },
     deleteRoom: function (rname){

@@ -339,6 +339,13 @@
             $('#death_vote').html("")
             $('#death_vote').append(deathVote)
         })
+        socket.on('server-send-host-is-disconnect',function() {
+            $("#gameWrapper").html("")
+            $("#gameNotification").hide(200)
+            $("#gameNotification").html("<h1>Host đã mất kết nối</h1>")
+            $("#gameNotification").show(200)
+            $("#endgame_form").show(200)
+        });
         //==============================================================================================
 
 

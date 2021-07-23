@@ -38,7 +38,7 @@ io.on('connection', (socket, io) => {
         pid = socket.id;
         socket.emit('server-xac-nhan-id', pid);
 
-        rooms.checkRoom(proom, pid, () => {
+        rooms.checkRoom(proom, pid, (result) => {
             socket.emit('server-xac-nhan-host');
         });
         player.addPlayer(pid, pname, proom);
@@ -60,14 +60,21 @@ io.on('connection', (socket, io) => {
 
             rooms.handleMember(proom, -1);
 
-            player.getPlayersInRoom(proom, membersName, (mN) => {
-                socket.to(proom).emit('server-gui-cap-nhat-khung-nhin', mN);
-            }, () => {
-                socket.to(proom).emit('server-yeu-cau-hien-thi-nut-play');
-            }, () => {
-                socket.to(proom).emit('server-yeu-cau-dung-hien-thi-nut-play');
+            rooms.immaHost(proom, pid,(result)=>{
+                if(result){
+                    socket.to(proom).emit('server-send-host-is-disconnect');
+                }
+                else{
+                    player.getPlayersInRoom(proom, membersName, (mN) => {
+                        socket.to(proom).emit('server-gui-cap-nhat-khung-nhin', mN);
+                    }, () => {
+                        socket.to(proom).emit('server-yeu-cau-hien-thi-nut-play');
+                    }, () => {
+                        socket.to(proom).emit('server-yeu-cau-dung-hien-thi-nut-play');
+                    })
+                    socket.leave(proom)
+                }
             })
-            socket.leave(proom)
         })
     })
     socket.on('client-start-game', () => {
