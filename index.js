@@ -21,12 +21,14 @@ mysql.dbconnect();
 const player = require('./models/PlayerModel')
 const rooms = require('./models/RoomModel')
 const demo = require('./models/DemoruleModel')
+const rule = require('./models/RuleModel')
 
 //socket.io
 io.on('connection', (socket, io) => {
     let pname;
     let proom;
     let pid;
+    let nOTeammate = 2;
 
     console.log("player: " + socket.id + " connected");
 
@@ -85,8 +87,14 @@ io.on('connection', (socket, io) => {
                     socket.to(proom).emit('server-yeu-cau-cap-nhat-player-list', membersWithRole);
                 }
                 //xử lí game ở đây
-                let randLeader = Math.floor(Math.random() * membersWithRole.length);
-                socket.to(proom).emit('server-gui-yeu-cau-teamup', membersWithRole[randLeader].player);
+                rooms.getRound(proom, (round) => {
+                    rule.getMPM(round, membersWithRole.length, (mpm) => {
+                        console.log(mpm);
+                        let randLeader = Math.floor(Math.random() * membersWithRole.length);
+                        socket.to(proom).emit('server-gui-yeu-cau-teamup', [membersWithRole[randLeader].player, mpm]);
+                        rooms.nextRound(proom);
+                    })
+                })
             });
         })
     })
@@ -96,28 +104,56 @@ io.on('connection', (socket, io) => {
     socket.on('client-vote-team-fb', (data) => {
         socket.to(proom).emit('server-vote-team-fb-cho-host', data);
     })
-    socket.on('host-gui-ket-qua-vote', (data) => {
+    socket.on('host-gui-ket-qua-vote', (data) => { //[voteTeamResult, vr, chosenTeam, gameData]
         socket.to(proom).emit('server-vote-team-fb', data);
+        if (data[1]) {
+            console.log(data[2])
+            socket.to(proom).emit('server-give-misson-screen', data[3]);
+        } else {
+            setTimeout(() => {
+                let randLeader = Math.floor(Math.random() * data[3].length);
+                socket.to(proom).emit('server-gui-yeu-cau-teamup', [data[3][randLeader].player, nOTeammate]);
+                socket.to(proom).emit('server-send-death-vote-to-host');
+            }, 5000)
+        }
     })
-    socket.on('host-gui-yeu-cau-vote-thanh-cong', (gamedata)=>{
-        //handle
-        console.log("vote thanh cong")
+    socket.on('client-vote-mission-fb', (voteR)=>{
+        socket.to(proom).emit('server-send-vote-result-to-host', voteR);
     })
-    socket.on('host-gui-yeu-cau-vote-lai', (gamedata)=>{
-        setTimeout( ()=>{
-            let randLeader = Math.floor(Math.random() * gamedata.length);
-            socket.to(proom).emit('server-gui-yeu-cau-teamup', gamedata[randLeader].player);
-        } , 5000)
+    socket.on('client-send-final-vote-result-to-host', (result)=>{
+        socket.to(proom).emit('server-send-mission-final-result', result);
+        socket.to(proom).emit('server-wait-for-host');
     })
-    //game start
-    //round = 1, deathcount = 0, chon ngau nhien 1 nguoi choi lam leader
-    //nguoi choi duoc RENDER nhiem vu: "chon n nguoi choi de lap team" (bang checkbox)->nhan ACCEPT
-    //moi nguoi duoc RENDER ra team dang duoc ghep->vote cong khai
-    //neu that bai: chon nguoi choi khac lam leader (deathcount ++ , deathcount == 5 => game end)
-    //neu thanh congn: (deathcount = 0)RENDER nhiem vu cho team duoc ghep
-    //RENDER mang hinh cho cho m.n->team vote kin
-    //RENDER ket qua cho mn, luu kq vao csdl
-    //round ++;
+    socket.on('client-send-fb-update-mission-info-to-players', (gameData)=>{
+        rooms.getRound(proom, (round) => {
+            rule.getMPM(round, gameData.length, (mpm) => {
+                console.log(mpm);
+                let randLeader = Math.floor(Math.random() * gameData.length);
+                socket.to(proom).emit('server-gui-yeu-cau-teamup', [gameData[randLeader].player, mpm]);
+                rooms.nextRound(proom);
+            })
+        })
+    })
+    socket.on('client-send-game-is-ending', (wincount)=>{
+        console.log("end game")
+        if(wincount>0){
+            console.log("assassin last chance")
+            socket.to(proom).emit('server-give-assassin-last-chance');
+        }
+        else{
+            console.log("evil win")
+            socket.to(proom).emit('server-decided-evil-win');
+        }
+    })
+    socket.on('assassin-kill-seeker', ()=>{
+        socket.to(proom).emit('server-decided-evil-win');
+    })
+    socket.on('assassin-not-kill-seeker', ()=>{
+        socket.to(proom).emit('server-decided-human-win');
+    })
+    socket.on('client-has-vote-5-times-fail', ()=>{
+        socket.to(proom).emit('server-decided-evil-win');
+    })
 })
 
 route(app);

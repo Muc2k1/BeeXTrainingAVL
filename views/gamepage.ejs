@@ -15,37 +15,54 @@
 </head>
 
 <body>
-    <p>Chào
-        <span id="playerName" value=<%=name %> >
-            <%= name %>
-        </span> đã đến với phòng:
-        <span id="playerRoom" value=<%=room %> >
-            <%= room %>
-        </span> AvalonBeeX-training
-    </p>
-    <h2>Các người chơi trong phòng</h2>
-    <div id="playerList">
-    </div>
+    <div id="gameWrapper">
+        <p>Chào
+            <span id="playerName" style="font-weight: bold" value=<%=name %> >
+                <%= name %>
+            </span> đã đến với phòng:
+            <span id="playerRoom" style="font-weight: bold" value=<%=room %> >
+                <%= room %>
+            </span> AvalonBeeX-training
+        </p>
+        <div id="missionHistory"></div>
+        <h2>Các người chơi trong phòng</h2>
+        <div id="playerList">
+        </div>
+        <div id="death_vote" style="color: red"></div>
+        <div id="teamleader" style="display: none">
+            <p id="teamup_msg"></p>
+            <button id="go" type="submit">OK</button>
+        </div>
 
-    <div id="teamleader" style="display: none">
-        <p>Hãy lập team thực hiện nhiệm vụ</p>
-        <button id="go" type="submit">OK</button>
-    </div>
+        <div id="system" style="display: none">
+            <p>Team được lập bao gồm: </p>
+            <div id="teammate"></div>
+            <button id="TYes">Yes</button>
+            <button id="TNo">Nope</button>
+        </div>
 
-    <div id="system" style="display: none">
-        <p>Team được lập bao gồm: </p>
-        <div id="teammate"></div>
-        <button id="TYes">Yes</button>
-        <button id="TNo">Nope</button>
-    </div>
+        <div id="mission" style="display: none">
+            <p>Bạn có quyết định cố gắn hết sức cho nhiệm vụ lần này?</p>
+            <button id="MYes">Yes</button>
+            <button id="MNo" style="display: none">Nope</button>
+        </div>
 
-    <div>
-        <button id="start_game" type="submit" style="display:none">Start</button>
+        <div>
+            <button id="start_game" type="submit" style="display:none">Start</button>
+        </div>
+
+        <div id="message"></div>
+        <div id="play_ground" style="display:none">
+            Playground :
+            <div id="player_role"></div>
+        </div>
     </div>
-    <div id="play_ground" style="display:none">
-        Playground :
-        <div id="player_role"></div>
-    </div>
+    <div id="gameNotification" style="display: none">Game result</div><button style="display: none" type="button"
+        id="seeker_find_btn">OK</button>
+    <form id="endgame_form" action="/" method="GET" style="display: none">
+        <button type="submit">Main menu</button>
+    </form>
+
     <script> //script nay se dc dua di noi khac sau khi code xong
 
         //================================================================================================
@@ -55,6 +72,14 @@
         let myRole;
         let gameData;
         let voteTeamResult = [];
+        let voteMissionResult = [];
+        let chosenTeam = [];
+        let pname = $("#playerName")[0].innerText;
+        let proom = $("#playerRoom")[0].innerText;
+        let nOTeammate;
+        let gameMissionResult = [];
+        let winLose = [];
+        let deathVote = "";
 
         socket.on('server-gui-cap-nhat-khung-nhin', function (membersArray) {
             $('#playerList').html("");
@@ -97,8 +122,10 @@
                 }
             })
         })
-        socket.on('server-gui-yeu-cau-teamup', function (pid) {
-            if (myId == pid) {
+        socket.on('server-gui-yeu-cau-teamup', function (data) {
+            $('#teamup_msg').html('Hãy lập team thực hiện nhiệm vụ với <span style="font-weight: bold; font-size: 20px">' + data[1] + '</span> người(check vào số người chơi tương ứng)')
+            nOTeammate = data[1]; //handle checkbox
+            if (myId == data[0]) {
                 $('#playerList').html("");
                 gameData.forEach(function (member) {
                     if (myRole == "Mực nô đùa") {//normal player sight
@@ -115,13 +142,21 @@
             //xu li so nguoi trong team dung theo rule
         })
         socket.on('server-gui-thong-tin-teamup', function (teamdata) {
+            $('#message').hide(100);
+            $('#message').html("");
+            $('#message').show(100);
+            voteMissionResult = [];
+            chosenTeam = [];
+            chosenTeam = [...teamdata];
+
             $('#system').show(100);
 
+            $('#teammate').hide(100);
             $('#teammate').html("");
-            
             teamdata.forEach(function (member) {
                 $('#teammate').append('<li>' + member + '</li>')
             })
+            $('#teammate').show(100);
 
             $('#playerList').html("");
             gameData.forEach(function (member) {
@@ -142,7 +177,6 @@
                 voteTeamResult.push({ vote: data[0], pid: data[1], pname: data[2], prole: data[3] });
 
                 if (voteTeamResult.length == gameData.length) {
-                    console.log("handle")
                     let voteCount = 0;
                     let vr;
                     voteTeamResult.forEach(function (data) {
@@ -150,19 +184,18 @@
                     })
                     if (voteCount > voteTeamResult.length / 2) {
                         vr = true;
-                        socket.emit('host-gui-yeu-cau-vote-thanh-cong', gameData)
+                        // socket.emit('host-gui-yeu-cau-vote-thanh-cong', gameData)
                     } else {
                         vr = false;
-                        socket.emit('host-gui-yeu-cau-vote-lai', gameData)
+                        // socket.emit('host-gui-yeu-cau-vote-lai', gameData)
                     }
-                    socket.emit('host-gui-ket-qua-vote', [voteTeamResult, vr])
+                    socket.emit('host-gui-ket-qua-vote', [voteTeamResult, vr, chosenTeam, gameData])
                 }
             }
         })
         socket.on('server-vote-team-fb', function (data) { //{vote, pid, pname, prole}
             $('#playerList').html("");
             data[0].forEach(function (member) {
-                console.log(member)
                 let vr;
                 if (member.vote) {
                     vr = '<span style="color: green">YES</span>'
@@ -179,14 +212,136 @@
                     else $('#playerList').append('<li class="player">' + member.pname + vr + '</li>')
                 }
             })
-            if(data[1])
-                $('#playerList').append('<h3>Vote thanh cong</h3>')
-            else $('#playerList').append('<h3>That bai</h3>')
+
+            $('#message').html("");
+            if (data[1])
+                $('#message').append('<h3>Team đã thành lập</h3>')
+            else $('#message').append('<h3>Phần lớn mọi người không đồng ý team này được thành lập</h3>')
+        })
+        socket.on('server-give-misson-screen', function (data) {
+            deathVote = ""
+            $('#message').html("");
+            let isIInChosenTeam = false;
+            chosenTeam.forEach((member) => {
+                if (pname.trim() == member.trim()) isIInChosenTeam = true;
+            })
+            if (isIInChosenTeam) {
+                $('#mission').show(100);
+                if (myRole == "Mực gian tà" || myRole == "Mực the assassin")
+                    $('#MNo').show(100);
+            }
+            else $('#message').append('<h3>Đợi các người chơi khác thực hiện nhiệm vụ nhé~</h3>')
+        });
+        socket.on('server-send-vote-result-to-host', function (voteR) {
+            if (isHost) {
+                voteMissionResult.push(voteR);
+                if (voteMissionResult.length == chosenTeam.length) {
+                    let result = true;
+                    voteMissionResult.forEach((vote) => {
+                        if (!vote)
+                            result = false;
+                    })
+                    setTimeout(() => { socket.emit('client-send-final-vote-result-to-host', result) }, 3000)
+                }
+            }
+        });
+        socket.on('server-send-mission-final-result', function (result) {
+            $('#message').html("");
+            winLose.push(result);
+            if (result) {
+                gameMissionResult.push('<p style="color: green; display: inline;">---Success</p>')
+                $('#message').append('<h3 style="color: green">Nhiệm vụ đã thành công!</h3>')
+            }
+            else {
+                gameMissionResult.push('<p style="color: red; display: inline;">---Fail</p>')
+                $('#message').append('<h3 style="color: red">Nhiệm vụ đã thất bại, có nội gián!!!</h3>')
+            }
+            $('#missionHistory').html("");
+            gameMissionResult.forEach((mR) => {
+                $('#missionHistory').append(mR)
+            })
+            if (winLose.length == 5) {
+                let wincount = 0
+                winLose.forEach((round) => {
+                    if (round) wincount++
+                    else wincount--
+                })
+                if (wincount > 0) {
+                    if (myRole != "Mực the assassin") {
+                        $("#gameNotification").show(200)
+                        $("#gameNotification").html("Every thing seem right...")
+                        //render mang hinh cua assassin
+                        $("#gameWrapper").html("")
+                    }
+                    else {
+                        $("#gameNotification").show(200)
+                        $("#gameWrapper").html("")
+                    }
+                }
+                else {
+                    $("#gameNotification").show(200)
+                    $("#gameNotification").html("Evil win")
+                    //nut replay
+                    $("#gameWrapper").html("")
+                }
+                if (isHost)
+                    socket.emit('client-send-game-is-ending', wincount)
+            }
+
+        });
+        socket.on('server-send-mission-final-result', function () {
+            if (isHost) {
+                socket.emit('client-send-fb-update-mission-info-to-players', gameData)
+            }
+        })
+        socket.on('server-give-assassin-last-chance', function () {
+            if (myRole.trim() == "Mực the assassin") {
+                $('#gameNotification').html('');
+                $('#gameNotification').append('<i>Chọn tiên tri bên đối thủ để ám sát!</i>')
+                gameData.forEach(function (member) {
+                    if (member.role.trim() != "Mực gian tà" && member.role.trim() != "Mực the assassin") {
+                        $('#gameNotification').append('<li class="player">' + member.name + '<input class="scbox" type="checkbox" value="' + member.role + '"></li>')
+                        // $('#gameNotification').append('<li class="player">' + member.name + '<input class="scbox" type="checkbox" value="' + member.role + '></li>')
+                    }
+                })
+                $("#seeker_find_btn").show(100)
+            }
+        })
+        socket.on('server-decided-evil-win', function () {
+            $("#gameWrapper").html("")
+            $("#gameNotification").hide(200)
+            $("#gameNotification").html("<h1>Evil win</h1>")
+            $("#gameNotification").show(200)
+            $("#endgame_form").show(200)
+
+            gameData.forEach(function (member) {
+                $('#endgame_form').append('<li>' + member.name + ' có role: ' + member.role + '</li>')
+            })
+        });
+        socket.on('server-decided-human-win', function () {
+            $("#gameWrapper").html("")
+            $("#gameNotification").hide(200)
+            $("#gameNotification").html("<h1>Human win</h1>")
+            $("#gameNotification").show(200)
+            $("#endgame_form").show(200)
+
+            gameData.forEach(function (member) {
+                $('#endgame_form').append('<li>' + member.name + ' có role: ' + member.role + '</li>')
+            })
+        });
+        socket.on('server-send-death-vote-to-host', function () {
+            deathVote += "X"
+            if (isHost) {
+                if (deathVote.length == 5) {
+                    socket.emit('client-has-vote-5-times-fail')
+                }
+            }
+            $('#death_vote').html("")
+            $('#death_vote').append(deathVote)
         })
         //==============================================================================================
 
-        let pname = $("#playerName")[0].innerText;
-        let proom = $("#playerRoom")[0].innerText;
+
         // console.log(pname + ' -> ' + proom);
         $(document).ready(() => {
             socket.emit('client-gui-thong-tin-khoi-tao', {
@@ -210,14 +365,43 @@
             socket.emit('client-teamup-fb', teammate)
         })
         $("#TYes").click(() => {
-            $('#system').hide(100);
+            $('#system').hide(100)
             socket.emit('client-vote-team-fb', [true, myId, pname, myRole])
         })
         $(("#TNo")).click(() => {
-            $('#system').hide(100);
+            $('#system').hide(100)
             socket.emit('client-vote-team-fb', [false, myId, pname, myRole])
         })
 
+        $("#MYes").click(() => {
+            $('#mission').hide(100)
+            socket.emit('client-vote-mission-fb', true)
+        })
+        $("#MNo").click(() => {
+            $('#mission').hide(100)
+            socket.emit('client-vote-mission-fb', false)
+        })
+        $("#seeker_find_btn").click(() => {
+            $("#gameNotification").hide(100)
+            $("#seeker_find_btn").hide(100)
+            let seeker
+            let plist = document.getElementsByClassName('scbox')
+            for (let i = 0; i < plist.length; i++) {
+                if (plist[i].checked) {
+                    seeker = plist[i].value.trim()
+                }
+            }
+            if (seeker == "Mực tiên tri") {
+                //handle
+                socket.emit('assassin-kill-seeker')
+                console.log("Đúng")
+            }
+            else {
+                //handle
+                socket.emit('assassin-not-kill-seeker')
+                console.log("Sai")
+            }
+        })
     </script>
 </body>
 

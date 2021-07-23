@@ -10,7 +10,7 @@ let Room = {
                 Room.handleMember(rname, 1);
             }
             else{
-                Room.addRoom(rname, null, 0, 1, pid);
+                Room.addRoom(rname, null, 1, 1, pid);
             }
             Room.immaHost(rname,pid,callback)
         })
@@ -52,6 +52,21 @@ let Room = {
         let sql = `delete from rooms where rname = '${rname}'`
         mysql.db.query(sql, (err, result) => {
             if (err) throw err
+        })
+    },
+    getRound: function (rname, callback){
+        let sql = `select rround from rooms where rname = "${rname}"`
+        mysql.db.query(sql, (err, result) => {
+            if (err) throw err
+            callback(result[0].rround); 
+        })
+    },
+    nextRound: function (rname){
+        Room.getRound(rname, (round)=>{
+            let sql = `update rooms set rround = '${round+1}' where rname = '${rname}'`
+            mysql.db.query(sql, (err, result) => {
+                if (err) throw err
+            })
         })
     }
 }
