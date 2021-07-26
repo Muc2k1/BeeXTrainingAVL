@@ -3,7 +3,7 @@
     "ejs": "^3.1.6",
     "express": "^4.17.1",
     "jquery": "^3.6.0",
-    "mysql": "^2.18.1",
+    "mysql": "^2.18.1",https://github.com/Muc2k1/BeeXTrainingAVL/blob/main/Readme
     "socket.io": "^4.1.3"
 => Yêu cầu có NodeJs và MySql để sử dụng bảng demo này
 => Cài đặt các thư viện trên cần chạy lệnh "npm i" trong terminal/cmd
@@ -28,4 +28,4 @@ B2.3: thêm dữ liệu vào các bảng:
     + role (rname, rid, rblueteam, rdes) VALUES ('Mực tiên tri', '2', '1', 'Thuộc phe Xanh,không hề có súng nhưng có thể nhận biết được phe Đỏ, cẩn thận thân phận bị bại lộ'), ('Mực nô đùa', '1', '1', 'Thuộc phe Xanh, cùng nhau làm nhiệm vụ và tìm ra kẻ gian thuộc phe Đỏ'), ('Mực the assassin', '4', '0', 'Thuộc phe Đỏ, trà trộn vào và phá hoại nhiệm vụ phe Xanh, tìm ra Mực Trần Thìn và thủ tiêu nếu phá hoại không thành công'), ('Mực gian tà', '3', '0', 'Thuộc phe Đỏ, trà trộn vào và phá hoại nhiệm vụ phe Xanh')
     + rule (members, round1, round2, round3, round4,round5, blueteam,redteam,mpm) VALUES ('5', '2', '3', '2', '3', '3', '3', '2', '23233'), ('6', '2', '3', '4', '3', '4', '4', '2', '23434'), ('7', '2', '3', '3', '4', '4', '4', '3', '23344'), ('8', '3', '4', '4', '5', '5', '5', '3', '34455'), ('9', '3', '4', '4', '5', '5', '6', '3', '34455'), ('10', '3', '4', '4', '5', '5', '6', '4', '34455')
 
-B3: chạy lệnh "npm run dev" -> sử dụng url: "localhost://9090" để mở client
+B3: chạy lệnh "npm run dev" -> sử dụng url: "localhost:9090" để mở client
