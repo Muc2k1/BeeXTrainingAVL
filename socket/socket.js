@@ -92,8 +92,8 @@ let socketUser = {
                     });
                 })
             })
-            socket.on('client-teamup-fb', (teamdata) => {
-                socket.to(proom).emit('server-gui-thong-tin-teamup', teamdata);
+            socket.on('client-teamup-fb', (data) => {
+                socket.to(proom).emit('server-gui-thong-tin-teamup', {teamdata: data[0], leader: data[1]});
             })
             socket.on('client-vote-team-fb', (data) => {
                 socket.to(proom).emit('server-vote-team-fb-cho-host', data);
