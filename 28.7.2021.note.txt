@@ -1,0 +1,12 @@
+Không sử dụng static file được do khai báo ở dưới >:( rất nhảm luôn => js dịch từ trên xuống
+
+
+Import >< Require
++Gióng: móc mấy cái thư viện lại xài;
+        thiệt ra Import tới lúc dịch nó cũng dịch thành require;
++Khác:  require theo chuẩn COMMONJS, đũy Import là thg nhóc sinh sau đẻ muộn ES6
+        Import cho phép đưa cái j cần chứ k đưa dô hết -> Hiệu xuất tốt liền O.o
+        Import là BẤT ĐỒNG BỘ, Require là ĐỒNG BỘ
+
+
+Path là cái để xử lí các đường dẫn thôi không có j hót, có 1 số hàm để hỗ trợ giúp tạo đường dẫn + định dạng dễ hơn
