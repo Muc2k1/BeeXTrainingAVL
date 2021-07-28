@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
-const path = require('path');
+// const path = require('path');
+
+app.use(express.static('public'))
 
 app.set('view engine', 'ejs');
 app.set('views', './views')
@@ -19,6 +21,9 @@ const socketUser = require('./socket/socket')
 socketUser.useSocket(server);
 route(app);
 
-app.use(express.static(path.join(__dirname, '/public')))
 
-server.listen(9090)
+
+// app.use(express.static(path.join(__dirname, '/public')))
+
+
+server.listen(9090, ()=>{console.log("http://localhost:9090")})

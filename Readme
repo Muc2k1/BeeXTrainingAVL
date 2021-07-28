@@ -8,6 +8,9 @@
 => Yêu cầu có NodeJs và MySql để sử dụng bảng demo này
 => Cài đặt các thư viện trên cần chạy lệnh "npm i" trong terminal/cmd
 ------ CÀI ĐẶT CƠ SỞ DỮ LIỆU LOCAL
+
+->Dataseeding
+
 B1: Cài đặt csdl: (Chạy Localhost bằng Xampp), start apache và my sql
 
 Cách 1:
